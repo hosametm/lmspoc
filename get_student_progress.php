@@ -31,10 +31,9 @@ if (!empty($missingParams)) {
 }
 
 $query = 'SELECT 
-            sc.student_id,
-            sc.watched ,
             sc.course_id,
             c.title AS course_name,
+            sc.watched ,
             COUNT(l.id) AS lesson_count
         FROM 
             students_courses sc
@@ -46,15 +45,11 @@ $query = 'SELECT
             lessons l ON l.chapter_id = ch.id
         LEFT JOIN 
         packages_courses pc ON pc.course_id = c.id
-        WHERE sc.student_id = user_id AND pc.package_id = track_id
+        WHERE sc.student_id = :user_id AND pc.package_id = :track_id
         GROUP BY 
             sc.student_id, sc.course_id, c.title, sc.watched
         ORDER BY 
             sc.student_id, c.title;';
-
-foreach ($allowedParams as $param) {
-    $query = str_replace($param['name'], ":" . $param['name'], $query);
-}
 
 $stmt = $pdo->prepare($query);
 foreach ($allowedParams as $param) {
