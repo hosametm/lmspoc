@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode($data);
     exit();
 }
-$allowedParams = json_decode('[{"name":"user_id","type":"integer","required":"1"}]', true);
+$allowedParams = json_decode('[{"name":"user_id","type":"integer","required":"1"},{"name":"track_id","type":"integer","required":"1"}]', true);
 $missingParams = [];
 $requestData = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,7 +44,9 @@ $query = 'SELECT
             chapters ch ON ch.course_id = c.id
         LEFT JOIN 
             lessons l ON l.chapter_id = ch.id
-        WHERE sc.student_id = user_id
+        LEFT JOIN 
+        packages_courses pc ON pc.course_id = c.id
+        WHERE sc.student_id = user_id AND pc.package_id = track_id
         GROUP BY 
             sc.student_id, sc.course_id, c.title, sc.watched
         ORDER BY 
@@ -59,20 +61,19 @@ foreach ($allowedParams as $param) {
     if (!isset($requestData[$param['name']])) {
         continue;
     }
-    $value = $requestData[$param['name']];
     switch ($param['type']) {
         case 'integer':
-            $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_INT);
+            $stmt->bindParam(':' . $param['name'], $requestData[$param['name']], PDO::PARAM_INT);
             break;
         case 'boolean':
-            $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_BOOL);
+            $stmt->bindParam(':' . $param['name'], $requestData[$param['name']], PDO::PARAM_BOOL);
             break;
         case 'json':
-            $value = json_encode($value);
+            $value = json_encode($requestData[$param['name']]);
             $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_STR);
             break;
         default:
-            $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_STR);
+            $stmt->bindParam(':' . $param['name'], $requestData[$param['name']], PDO::PARAM_STR);
     }
 }
 
@@ -81,7 +82,7 @@ try {
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($result as &$row) {
         $row['watched'] = count(explode(',', $row['watched']));
-        $row['lesson_count'] = (int)$row['lesson_count'];
+        $row['lesson_count'] = (int) $row['lesson_count'];
         $row['progress'] = $row['lesson_count'] > 0 ? round(($row['watched'] / $row['lesson_count']) * 100, 2) : 0;
     }
     $data = ['data' => $result, 'status' => 'success', 'message' => 'Data fetched successfully'];
