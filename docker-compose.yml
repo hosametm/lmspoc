@@ -1,4 +1,3 @@
-version: '3.8'
 services:
     php:
         build: .
@@ -6,3 +5,11 @@ services:
         - "80:80"
         volumes:
         - .:/var/www/html
+        networks:
+        - lmspoc-network
+        extra_hosts:
+        - "host.docker.internal:host-gateway"
+
+networks:
+    lmspoc-network:
+        driver: bridge
