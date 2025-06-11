@@ -1,2 +1,4 @@
 .env
 .vscode
+vendor
+.idea

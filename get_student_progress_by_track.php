@@ -4,18 +4,21 @@ require_once './connection.php';
 session_start();
 $json = file_get_contents("php://input");
 $_POST = json_decode($json, true);
+
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     $data = ['data' => [], 'status' => 'error', 'message' => 'Invalid request method'];
     echo json_encode($data);
     exit();
 }
+
 $allowedParams = json_decode('[{"name":"user_id","type":"integer","required":"1"},{"name":"track_id","type":"integer","required":"1"}]', true);
 $missingParams = [];
 $requestData = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $requestData = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+} else {
+    $requestData = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
 }
-$requestData = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
 
 
 foreach ($allowedParams as $param) {
