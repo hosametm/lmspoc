@@ -53,7 +53,7 @@ $query = 'SELECT c.id, c.title, c.title_ar,c.duration, p.title AS track_title , 
         WHERE c.status = 1
         GROUP BY c.id, c.title, c.title_ar, c.duration, p.title
         LIMIT :limit OFFSET :offset';
-        
+
 $stmt = $pdo->prepare($query);
 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -74,8 +74,6 @@ try {
     ];
 } catch (PDOException $e) {
     error_log("Database error: " . $e->getMessage());
-    print_r($e->getMessage());
-    die;
     $data = ['data' => [], 'status' => 'error', 'message' => 'Database error'];
 
 }
