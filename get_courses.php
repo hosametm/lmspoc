@@ -42,7 +42,18 @@ $totalResult = $totalStmt->fetch(PDO::FETCH_ASSOC);
 $total = $totalResult ? (int) $totalResult['total'] : 0;
 
 // Main query with pagination
-$query = 'SELECT c.id, c.title, c.title_ar FROM courses c LIMIT :limit OFFSET :offset';
+$query = 'SELECT c.id, c.title, c.title_ar,c.duration, p.title AS track_title , COUNT(l.id) AS lesson_count
+        FROM courses c
+        LEFT JOIN 
+            chapters ch ON ch.course_id = c.id
+        LEFT JOIN 
+            lessons l ON l.chapter_id = ch.id
+        LEFT JOIN packages_courses pc ON c.id = pc.course_id
+        LEFT JOIN packages p ON pc.package_id = p.id
+        WHERE c.status = 1
+        GROUP BY c.id, c.title, c.title_ar, c.duration, p.title
+        LIMIT :limit OFFSET :offset';
+        
 $stmt = $pdo->prepare($query);
 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -63,6 +74,8 @@ try {
     ];
 } catch (PDOException $e) {
     error_log("Database error: " . $e->getMessage());
+    print_r($e->getMessage());
+    die;
     $data = ['data' => [], 'status' => 'error', 'message' => 'Database error'];
 
 }

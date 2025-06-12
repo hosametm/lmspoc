@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit();
 }
 
-$allowedParams = json_decode('[{"name":"user_id","type":"integer","required":"1"},{"name":"track_id","type":"integer","required":"1"}]', true);
+$allowedParams = json_decode('[{"name":"user_id","type":"integer","required":"1"},{"name":"courses_ids","type":"string","required":"1"}]', true);
 $missingParams = [];
 $requestData = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -46,17 +46,28 @@ $query = 'SELECT
             chapters ch ON ch.course_id = c.id
         LEFT JOIN 
             lessons l ON l.chapter_id = ch.id
-        LEFT JOIN 
-        packages_courses pc ON pc.course_id = c.id
-        WHERE sc.student_id = :user_id AND pc.package_id = :track_id
+        WHERE sc.student_id = :user_id AND c.id in (courses_ids)
         GROUP BY 
             sc.student_id, sc.course_id, c.title, sc.watched
         ORDER BY 
             sc.student_id, c.title;';
 
+$coursesIds = implode(',', array_map('intval', explode(',', $requestData['courses_ids'])));
+
+// validate courses_ids to prevent SQL injection
+if (preg_match('/^[0-9,]+$/', $coursesIds) !== 1) {
+    $data = ['data' => [], 'status' => 'error', 'message' => 'Invalid courses_ids format'];
+    echo json_encode($data);
+    exit();
+}
+$query = str_replace('courses_ids', $coursesIds, $query);
+
 $stmt = $pdo->prepare($query);
 foreach ($allowedParams as $param) {
     if (!isset($requestData[$param['name']])) {
+        continue;
+    }
+    if ($param['name'] == 'courses_ids') {
         continue;
     }
     switch ($param['type']) {
