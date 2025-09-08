@@ -12,10 +12,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $allowedParams = json_decode('[{"name":"name","type":"string","required":"1"},{"name":"email","type":"string","required":"1"},{"name":"competency","type":"string","required":"1"},{"name":"job_title","type":"string","required":"1"}]', true);
 $missingParams = [];
 $requestData = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $requestData = filter_input_array(INPUT_POST, FILTER_SANITIZE_SPECIAL_CHARS);
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $requestData = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
 }
-$requestData = filter_input_array(INPUT_GET, FILTER_SANITIZE_SPECIAL_CHARS);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $requestData = filter_var_array($requestData, FILTER_SANITIZE_SPECIAL_CHARS);
+}
+
 
 
 foreach ($allowedParams as $param) {
@@ -42,18 +45,18 @@ foreach ($allowedParams as $param) {
     $value = $requestData[$param['name']];
     switch ($param['type']) {
         case 'integer':
-            $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_INT);
+            $stmt->bindValue(':' . $param['name'], (int) $requestData[$param['name']], PDO::PARAM_INT);
             break;
         case 'boolean':
-            $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_BOOL);
+            $stmt->bindValue(':' . $param['name'], (bool) $requestData[$param['name']], PDO::PARAM_BOOL);
             break;
         case 'json':
-            $value = json_encode($value);
-            $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_STR);
+            $stmt->bindValue(':' . $param['name'], json_encode($requestData[$param['name']]), PDO::PARAM_STR);
             break;
         default:
-            $stmt->bindParam(':' . $param['name'], $value, PDO::PARAM_STR);
+            $stmt->bindValue(':' . $param['name'], $requestData[$param['name']], PDO::PARAM_STR);
     }
+
 }
 
 try {
