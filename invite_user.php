@@ -65,12 +65,12 @@ try {
     $userId = $pdo->lastInsertId();
     $pdo->commit();
 
-    $mailService = new MailService();
-    $toEmail = $requestData['user_email'];
-    $toName = $requestData['name'];
-    $subject = 'Invitation to Join Our Platform';
-    $body = "Hello $toName,<br><br>You have been invited to join our platform. Use your PMS credentials to log in.<br>Best regards,<br>Your Team";
-    $mailService->send($toEmail, $toName, $subject, $body);
+    // $mailService = new MailService();
+    // $toEmail = $requestData['user_email'];
+    // $toName = $requestData['name'];
+    // $subject = 'Invitation to Join Our Platform';
+    // $body = "Hello $toName,<br><br>You have been invited to join our platform. Use your PMS credentials to log in.<br>Best regards,<br>Your Team";
+    // $mailService->send($toEmail, $toName, $subject, $body);
 
     echo json_encode([
         'data' => ['user_id' => intval($userId)],
