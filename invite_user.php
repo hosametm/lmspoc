@@ -49,9 +49,14 @@ try {
     $checkStmt = $pdo->prepare($checkQuery);
     $checkStmt->bindParam(':email', $requestData['user_email'], PDO::PARAM_STR);
     $checkStmt->execute();
-
-    if ($checkStmt->fetchColumn()) {
-        throw new Exception('User with this email already exists');
+    $userData = $checkStmt->fetch(PDO::FETCH_ASSOC);
+    if ($userData) {
+        echo json_encode([
+            'data' => ['user_id' => intval($userData['id'])],
+            'status' => 'success',
+            'message' => "User invited successfully"
+        ]);
+        exit();
     }
 
     // Insert new user
