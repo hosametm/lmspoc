@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode($data);
     exit();
 }
-$allowedParams = json_decode('[{"name":"name","type":"string","required":"1"},{"name":"email","type":"string","required":"1"},{"name":"competency","type":"string","required":"1"},{"name":"job_title","type":"string","required":"1"}]', true);
+$allowedParams = json_decode('[{"name":"name","type":"string","required":"1"},{"name":"user_id","type":"integer","required":"1"},{"name":"email","type":"string","required":"1"},{"name":"competency","type":"string","required":"1"},{"name":"job_title","type":"string","required":"1"}]', true);
 $missingParams = [];
 $requestData = $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -34,9 +34,9 @@ if (!empty($missingParams)) {
 }
 
 $query = "INSERT INTO learning_assignment_requests 
-    (name,email, competency, job_title)
+    (name,email, competency, job_title, user_id)
 VALUES
-    (:name, :email, :competency, :job_title);";
+    (:name, :email, :competency, :job_title, :user_id);";
 $stmt = $pdo->prepare($query);
 foreach ($allowedParams as $param) {
     if (!isset($requestData[$param['name']])) {
