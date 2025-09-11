@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 require_once './connection.php';
-require_once './MailService.php';
+// require_once './MailService.php';
 session_start();
 
 // Decode JSON input
