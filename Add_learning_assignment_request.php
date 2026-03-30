@@ -33,6 +33,18 @@ if (!empty($missingParams)) {
     exit();
 }
 
+$studentCheckQuery = 'SELECT id FROM students WHERE id = :user_id LIMIT 1';
+$studentCheckStmt = $pdo->prepare($studentCheckQuery);
+$studentCheckStmt->bindValue(':user_id', (int) $requestData['user_id'], PDO::PARAM_INT);
+$studentCheckStmt->execute();
+$student = $studentCheckStmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$student) {
+    $data = ['data' => [], 'status' => 'error', 'message' => 'User does not exist'];
+    echo json_encode($data);
+    exit();
+}
+
 $query = "INSERT INTO learning_assignment_requests 
     (name,email, competency, job_title, user_id)
 VALUES
